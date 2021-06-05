@@ -1,5 +1,10 @@
 #include "blake3_impl.h"
 
+#include <intrin.h>
+#include <x86intrin.h>
+#include <avxintrin.h>
+#include <avx2intrin.h>
+#include <avx512fintrin.h>
 #include <immintrin.h>
 
 #define DEGREE 4
