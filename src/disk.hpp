@@ -117,8 +117,13 @@ struct FileDisk {
             f_ = ::fopen(filename_.c_str(), (flags & writeFlag) ? "w+b" : "r+b");
 #endif
             if (f_ == nullptr) {
+				char err_buffer[256];
+				if(::strerror_s(err_buffer, 255, errno) != 0){
+					strncpy(err_buffer,"unknown error",strlen("unknown error"));
+				}
+				err_buffer[255] = '\0';
                 std::string error_message =
-                    "Could not open " + filename_.string() + ": " + ::strerror(errno) + ".";
+                    "Could not open " + filename_.string() + ": " + std::string(err_buffer) + ".";
                 if (flags & retryOpenFlag) {
                     std::cout << error_message << " Retrying in five minutes." << std::endl;
                     std::this_thread::sleep_for(5min);

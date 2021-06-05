@@ -368,7 +368,8 @@ def calculate_plot_id_pk(
                 num_buckets,
                 num_stripes,
                 num_threads,
-                phases_flags);
+                phases_flags,
+				show_progress);
     } else if (operation == "prove") {
         if (argc < 3) {
             HelpAndQuit(options);
