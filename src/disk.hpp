@@ -119,7 +119,7 @@ struct FileDisk {
             if (f_ == nullptr) {
 				char err_buffer[256];
 				if(::strerror_s(err_buffer, 255, errno) != 0){
-					strncpy(err_buffer,"unknown error",strlen("unknown error"));
+					strncpy_s(err_buffer,"unknown error",strlen("unknown error"));
 				}
 				err_buffer[255] = '\0';
                 std::string error_message =

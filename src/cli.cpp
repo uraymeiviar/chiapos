@@ -247,7 +247,7 @@ def calculate_plot_id_pk(
 			time_t t = std::time(nullptr);
 			std::tm tm = *std::localtime(&t);
 			std::ostringstream oss;
-			oss << std::put_time(&tm, "%Y-%m-%d %H-%M-%S");
+			oss << std::put_time(&tm, "%Y-%m-%d-%H-%M");
 			string timestr = oss.str();
 
 			filename = "plot-k"+std::to_string((int)k)+"-"+timestr+"-"+id+".plot";
