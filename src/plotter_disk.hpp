@@ -48,6 +48,7 @@
 #include "pos_constants.hpp"
 #include "sort_manager.hpp"
 #include "util.hpp"
+#include "cli.hpp"
 
 #define B17PHASE23
 
@@ -58,10 +59,10 @@ public:
     // and their total size will be larger than the final plot file. Temp files are deleted at the
     // end of the process.
     void CreatePlotDisk(
-        std::string tmp_dirname,
-        std::string tmp2_dirname,
-        std::string final_dirname,
-        std::string filename,
+        std::wstring tmp_dirname,
+        std::wstring tmp2_dirname,
+        std::wstring final_dirname,
+        std::wstring filename,
         uint8_t k,
         const uint8_t* memo,
         uint32_t memo_len,
@@ -156,8 +157,8 @@ public:
         }
 #endif /* defined(_WIN32) || defined(__x86_64__) */
 
-        std::cout << std::endl
-                  << "Starting plotting progress into temporary dirs: " << tmp_dirname << " and "
+        std::wcout << std::endl
+                  << L"Starting plotting progress into temporary dirs: " << tmp_dirname << L" and "
                   << tmp2_dirname << std::endl;
         std::cout << "ID: " << Util::HexStr(id, id_len) << std::endl;
         std::cout << "Plot size is: " << static_cast<int>(k) << std::endl;
@@ -176,26 +177,26 @@ public:
 
         // The table0 file will be used for sort on disk spare. tables 1-7 are stored in their own
         // file.
-        tmp_1_filenames.push_back(fs::path(tmp_dirname) / fs::path(filename + ".sort.tmp"));
+        tmp_1_filenames.push_back(fs::path(tmp_dirname) / fs::path(filename + L".sort.tmp"));
         for (size_t i = 1; i <= 7; i++) {
             tmp_1_filenames.push_back(
-                fs::path(tmp_dirname) / fs::path(filename + ".table" + std::to_string(i) + ".tmp"));
+                fs::path(tmp_dirname) / fs::path(filename + L".table" + std::to_wstring(i) + L".tmp"));
         }
-        fs::path tmp_2_filename = fs::path(tmp2_dirname) / fs::path(filename + ".2.tmp");
-        fs::path final_2_filename = fs::path(final_dirname) / fs::path(filename + ".2.tmp");
+        fs::path tmp_2_filename = fs::path(tmp2_dirname) / fs::path(filename + L".2.tmp");
+        fs::path final_2_filename = fs::path(final_dirname) / fs::path(filename + L".2.tmp");
         fs::path final_filename = fs::path(final_dirname) / fs::path(filename);
 
         // Check if the paths exist
         if (!fs::exists(tmp_dirname)) {
-            throw InvalidValueException("Temp directory " + tmp_dirname + " does not exist");
+            throw InvalidValueException("Temp directory " + ws2s(tmp_dirname) + " does not exist");
         }
 
         if (!fs::exists(tmp2_dirname)) {
-            throw InvalidValueException("Temp2 directory " + tmp2_dirname + " does not exist");
+            throw InvalidValueException("Temp2 directory " + ws2s(tmp2_dirname) + " does not exist");
         }
 
         if (!fs::exists(final_dirname)) {
-            throw InvalidValueException("Final directory " + final_dirname + " does not exist");
+            throw InvalidValueException("Final directory " + ws2s(final_dirname) + " does not exist");
         }
         for (fs::path& p : tmp_1_filenames) {
             fs::remove(p);

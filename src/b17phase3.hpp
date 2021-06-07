@@ -53,8 +53,8 @@ b17Phase3Results b17RunPhase3(
     std::vector<FileDisk> &tmp_1_disks /*plot_filename*/,
     std::vector<uint64_t> table_sizes,
     const uint8_t *id,
-    const std::string &tmp_dirname,
-    const std::string &filename,
+    const std::wstring &tmp_dirname,
+    const std::wstring &filename,
     uint32_t header_size,
     uint64_t memory_size,
     uint32_t num_buckets,
@@ -142,7 +142,7 @@ b17Phase3Results b17RunPhase3(
             log_num_buckets,
             right_entry_size_bytes,
             tmp_dirname,
-            filename + ".p3.t" + std::to_string(table_index + 1),
+            filename + L".p3.t" + std::to_wstring(table_index + 1),
             0,
             0);
 
@@ -345,7 +345,7 @@ b17Phase3Results b17RunPhase3(
             log_num_buckets,
             right_entry_size_bytes,
             tmp_dirname,
-            filename + ".p3s.t" + std::to_string(table_index + 1),
+            filename + L".p3s.t" + std::to_wstring(table_index + 1),
             0,
             0);
 

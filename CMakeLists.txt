@@ -26,11 +26,6 @@ add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\"")
 project(chiapos C CXX ASM)
 
 set(BUILD_SHARED_LIBS OFF)
-set(CMAKE_EXE_LINKER_FLAGS "-static")
-
-set(BUILD_BLS_PYTHON_BINDINGS 0 CACHE INTEGER "")
-set(BUILD_BLS_TESTS 0 CACHE INTEGER "")
-set(BUILD_BLS_BENCHMARKS 0 CACHE INTEGER "")
 
 # Add path for custom modules
 set(CMAKE_MODULE_PATH
@@ -40,20 +35,6 @@ set(CMAKE_MODULE_PATH
 
 # CMake 3.14+
 include(FetchContent)
-
-FetchContent_Declare(
-  cxxopts
-  GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
-  GIT_TAG        v2.2.1
-)
-FetchContent_MakeAvailable(cxxopts)
-
-FetchContent_Declare(
-  gulrak
-  GIT_REPOSITORY https://github.com/gulrak/filesystem.git
-  GIT_TAG        v1.5.6
-)
-FetchContent_MakeAvailable(gulrak)
 
 set(FSE_LIB ${CMAKE_CURRENT_SOURCE_DIR}/lib/FiniteStateEntropy/lib)
 set(FSE_FILES
@@ -66,30 +47,44 @@ set(FSE_FILES
 include_directories(
   ${INCLUDE_DIRECTORIES}
   ${CMAKE_CURRENT_SOURCE_DIR}/../lib/include
-  ${cxxopts_SOURCE_DIR}/include
-  ${gulrak_SOURCE_DIR}/include/ghc
   ${CMAKE_CURRENT_SOURCE_DIR}/../lib/FiniteStateEntropy/lib
   ${CMAKE_CURRENT_SOURCE_DIR}/uint128_t
-  ${CMAKE_CURRENT_SOURCE_DIR}/src
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bls/relic
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bls
   ${CMAKE_CURRENT_SOURCE_DIR}/src/gmp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/pthreads
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/freetype/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/freetype/include/freetype
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/Include
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/linmath
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/mINI/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/nfd/src/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/stb
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/Tbl
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/backends
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Implot/
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/glad/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/relic/
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/relic/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/relic/include/low
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
   )
 
 add_library(fse ${FSE_FILES})
 
 add_compile_definitions(BLAKE3_NO_AVX512)
+add_compile_definitions(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
 
 IF (MSVC)
 message(STATUS "using MSVC")
 IF (CMAKE_BUILD_TYPE STREQUAL "RELEASE")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT /O3 /Oy /arch:AVX512 -Xclang -O3 -funroll-loops -fomit-frame-pointer -march=native -mavx2 -mavx512f -mavx512dq")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MT /O3 /Oy /arch:AVX512 -Xclang -O3 -funroll-loops -fomit-frame-pointer -march=native -mavx2 -mavx512f -mavx512dq")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT /O3 /Oi /Oy /arch:AVX")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MT /O3 /Oi /Oy /arch:AVX")
 ELSE()
 message(STATUS "using MSVC debug")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Ob1 /MTd")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Ob1 /MTd")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Od /MTd")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Od /MTd")
 ENDIF()
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zi -mavx2")
@@ -130,15 +125,67 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDIF()
 
-set(BLS_SRC
-    src/bls/bls.cpp
-	src/bls/elements.cpp
-	src/bls/privatekey.cpp
-	src/bls/schemes.cpp
-)
-
 set(INT128_SRC
     uint128_t/uint128_t.cpp
+)
+
+file(GLOB_RECURSE RELIC_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/src/relic/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/relic/*.cpp
+)
+
+file(GLOB_RECURSE IMGUI_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/*.cpp
+)
+
+file(GLOB IMGUI_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/backends/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/backends/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/misc/cpp/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/misc/cpp/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/misc/freetype/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Imgui/misc/freetype/*.cpp
+)
+
+file(GLOB IMFRAME_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/ImGui/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/ImGui/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/WinPC/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/WinPC/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/nfd/src/nfd_win.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/stb/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ImFrame/stb/*.cpp
+)
+
+add_compile_definitions(_GLFW_WIN32=1)
+file(GLOB GLFW_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/osmesa_context.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/wgl_context.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/vulkan.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/egl*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/egl*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/win32*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/win32*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/window.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/init.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/context.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/input.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw/src/monitor.c
+)
+
+file(GLOB GLAD_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glad/src/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glad/src/*.cpp
+)
+
+file(GLOB IMPLOT_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Implot/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Implot/*.cpp
 )
 
 IF (WIN32)
@@ -167,21 +214,31 @@ set(BLAKE3_SRC
 )
 ENDIF()
 
-add_executable(ProofOfSpace
-	${BLS_SRC}
+add_executable(ProofOfSpace WIN32 
 	${INT128_SRC}
+	${RELIC_SRC}
+	${IMGUI_SRC}
+	${IMFRAME_SRC}
+	${GLFW_SRC}
+	${GLAD_SRC}
+	${IMPLOT_SRC}
+	src/Keygen.cpp
     src/cli.cpp
+	src/main.cpp
     src/chacha8.c
     ${BLAKE3_SRC}	
 )
 
 find_package(Threads REQUIRED)
 
+#add_library(relic STATIC ${RELIC_SRC_FILES})
+#target_include_directories(relic PUBLIC relic)
+
 #add_library(uint128 STATIC uint128_t/uint128_t.cpp)
 #target_include_directories(uint128 PUBLIC uint128_t)
 
 target_compile_features(ProofOfSpace PUBLIC cxx_std_17)
-target_compile_options(ProofOfSpace PUBLIC /MT)
+target_compile_options(ProofOfSpace PUBLIC /MT /arch:AVX)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   target_link_libraries(ProofOfSpace fse Threads::Threads)
@@ -190,9 +247,15 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "OpenBSD")
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   target_link_libraries(ProofOfSpace fse Threads::Threads)
 elseif (MSVC)
+  #target_link_libraries(ProofOfSpace relic)
   target_link_libraries(ProofOfSpace fse Threads::Threads)
   target_link_libraries(ProofOfSpace ${CMAKE_SOURCE_DIR}/lib/gmp/gmp.lib)
-  target_link_libraries(ProofOfSpace ${CMAKE_SOURCE_DIR}/lib/relic/relic_s.lib)
+  target_link_libraries(ProofOfSpace ${CMAKE_SOURCE_DIR}/lib/freetype/freetype.lib)
+  target_link_libraries(ProofOfSpace ${CMAKE_SOURCE_DIR}/lib/bzip2/bz2.lib)
+  target_link_libraries(ProofOfSpace ${CMAKE_SOURCE_DIR}/lib/libpng/libpng16.lib)
+  target_link_libraries(ProofOfSpace ${CMAKE_SOURCE_DIR}/lib/zlib/zlib.lib)
+  target_link_libraries(ProofOfSpace ${CMAKE_SOURCE_DIR}/lib/brotli/brotlicommon-static.lib)
+  target_link_libraries(ProofOfSpace ${CMAKE_SOURCE_DIR}/lib/brotli/brotlidec-static.lib)
 else()
   target_link_libraries(ProofOfSpace fse stdc++fs Threads::Threads)
 endif()

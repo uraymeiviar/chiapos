@@ -50,7 +50,7 @@ class DiskProver {
 public:
     // The constructor opens the file, and reads the contents of the file header. The table pointers
     // will be used to find and seek to all seven tables, at the time of proving.
-    explicit DiskProver(const std::string& filename)
+    explicit DiskProver(const std::wstring& filename)
     {
         struct plot_header header{};
         this->filename = filename;
@@ -58,7 +58,7 @@ public:
         std::ifstream disk_file(filename, std::ios::in | std::ios::binary);
 
         if (!disk_file.is_open()) {
-            throw std::invalid_argument("Invalid file " + filename);
+            throw std::invalid_argument("Invalid file ");
         }
         // 19 bytes  - "Proof of Space Plot" (utf-8)
         // 32 bytes  - unique plot id
@@ -135,7 +135,7 @@ public:
 
     void GetId(uint8_t* buffer) { memcpy(buffer, id, kIdLen); }
 
-    std::string GetFilename() const noexcept { return filename; }
+    std::wstring GetFilename() const noexcept { return filename; }
 
     uint8_t GetSize() const noexcept { return k; }
 
@@ -152,7 +152,7 @@ public:
             std::ifstream disk_file(filename, std::ios::in | std::ios::binary);
 
             if (!disk_file.is_open()) {
-                throw std::invalid_argument("Invalid file " + filename);
+                throw std::invalid_argument("Invalid file ");
             }
 
             // This tells us how many f7 outputs (and therefore proofs) we have for this
@@ -210,7 +210,7 @@ public:
             std::ifstream disk_file(filename, std::ios::in | std::ios::binary);
 
             if (!disk_file.is_open()) {
-                throw std::invalid_argument("Invalid file " + filename);
+                throw std::invalid_argument("Invalid file ");
             }
 
             std::vector<uint64_t> p7_entries = GetP7Entries(disk_file, challenge);
@@ -235,7 +235,7 @@ public:
 
 private:
     mutable std::mutex _mtx;
-    std::string filename;
+    std::wstring filename;
     uint32_t memo_size;
     uint8_t* memo;
     uint8_t id[kIdLen]{};  // Unique plot id

@@ -588,8 +588,8 @@ std::vector<uint64_t> RunPhase1(
     std::vector<FileDisk>& tmp_1_disks,
     uint8_t const k,
     const uint8_t* const id,
-    std::string const tmp_dirname,
-    std::string const filename,
+    std::wstring const tmp_dirname,
+    std::wstring const filename,
     uint64_t const memory_size,
     uint32_t const num_buckets,
     uint32_t const log_num_buckets,
@@ -612,7 +612,7 @@ std::vector<uint64_t> RunPhase1(
         log_num_buckets,
         t1_entry_size_bytes,
         tmp_dirname,
-        filename + ".p1.t1",
+        filename + L".p1.t1",
         0,
         globals.stripe_size);
 
@@ -681,7 +681,7 @@ std::vector<uint64_t> RunPhase1(
             log_num_buckets,
             right_entry_size_bytes,
             tmp_dirname,
-            filename + ".p1.t" + std::to_string(table_index + 1),
+            filename + L".p1.t" + std::to_wstring(table_index + 1),
             0,
             globals.stripe_size);
 

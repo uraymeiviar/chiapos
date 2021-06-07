@@ -29,8 +29,8 @@ std::vector<uint64_t> b17RunPhase2(
     std::vector<uint64_t> table_sizes,
     uint8_t k,
     const uint8_t *id,
-    const std::string &tmp_dirname,
-    const std::string &filename,
+    const std::wstring &tmp_dirname,
+    const std::wstring &filename,
     uint64_t memory_size,
     uint32_t num_buckets,
     uint32_t log_num_buckets,
@@ -96,7 +96,7 @@ std::vector<uint64_t> b17RunPhase2(
             log_num_buckets,
             left_entry_size_bytes,
             tmp_dirname,
-            filename + ".p2.t" + std::to_string(table_index - 1),
+            filename + L".p2.t" + std::to_wstring(table_index - 1),
             0,
             0);
 

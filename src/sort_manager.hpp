@@ -30,7 +30,7 @@
 #include "./uniformsort.hpp"
 #include "disk.hpp"
 #include "exceptions.hpp"
-
+#include "cli.hpp"
 #include "thread_pool.hpp"
     
 extern thread_pool pool;
@@ -54,8 +54,8 @@ public:
         uint32_t const num_buckets,
         uint32_t const log_num_buckets,
         uint16_t const entry_size,
-        const std::string &tmp_dirname,
-        const std::string &filename,
+        const std::wstring &tmp_dirname,
+        const std::wstring &filename,
         uint32_t begin_bits,
         uint64_t const stripe_size,
         strategy_t const sort_strategy = strategy_t::uniform,
@@ -81,7 +81,7 @@ public:
 
             fs::path const bucket_filename =
                 fs::path(tmp_dirname) /
-                fs::path(filename + ".sort_bucket_" + bucket_number_padded.str() + ".tmp");
+                fs::path(filename + L".sort_bucket_" + s2ws(bucket_number_padded.str()) + L".tmp");
             fs::remove(bucket_filename);
 
             buckets_.emplace_back(

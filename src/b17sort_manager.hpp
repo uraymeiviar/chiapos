@@ -29,6 +29,7 @@
 #include "./quicksort.hpp"
 #include "./uniformsort.hpp"
 #include "exceptions.hpp"
+#include "cli.hpp"
 
 class b17SortManager {
 public:
@@ -38,8 +39,8 @@ public:
         uint32_t num_buckets,
         uint32_t log_num_buckets,
         uint16_t entry_size,
-        const std::string &tmp_dirname,
-        const std::string &filename,
+        const std::wstring &tmp_dirname,
+        const std::wstring &filename,
         uint32_t begin_bits,
         uint64_t stripe_size)
     {
@@ -66,7 +67,7 @@ public:
 
             fs::path bucket_filename =
                 fs::path(tmp_dirname) /
-                fs::path(filename + ".sort_bucket_" + bucket_number_padded.str() + ".tmp");
+                fs::path(filename + L".sort_bucket_" + s2ws(bucket_number_padded.str()) + L".tmp");
             fs::remove(bucket_filename);
             this->bucket_files.push_back(FileDisk(bucket_filename));
         }
