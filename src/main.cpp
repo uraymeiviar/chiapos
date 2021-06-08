@@ -134,6 +134,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 		else {
 			RedirectIOToConsole();
 		}
+		std::cout << std::endl;
 		if (nArgs >= 1)
 		{
 			std::filesystem::path exePath(args[0]);
@@ -345,17 +346,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 						std::cout << "Usage "<< exePath.filename().string() <<" proof <filepath> <challenge>" << std::endl;
 						std::cout << "   filepath  : path to file to check" << std::endl;
 						std::cout << "   challenge : multiple of 8 bytes in hex" << std::endl;
-						return 0;
 					}
 					else {
 						std::filesystem::path targetPath(args[2]);
 						if (std::filesystem::exists(targetPath) && std::filesystem::is_regular_file(targetPath)) {
 							std::string proof = ws2s(std::wstring(args[3]));
-							return cli_proof(proof,targetPath.wstring());
+							cli_proof(proof,targetPath.wstring());
 						}
 						else {
 							std::cerr << "file not exist" << std::endl;
-							return 1;
 						}
 					}
 				}
@@ -365,13 +364,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 						std::cout << "   id        : 32 bytes ID in hex" << std::endl;
 						std::cout << "   proof     : 32 bytes proof in hex" << std::endl;
 						std::cout << "   challenge : multiple of 8 bytes in hex" << std::endl;
-						return 0;
 					}
 					else {
 						std::string id = ws2s(std::wstring(args[2]));
 						std::string proof = ws2s(std::wstring(args[3]));
 						std::string challenge = ws2s(std::wstring(args[4]));
-						return cli_verify(id, proof, challenge);
+						cli_verify(id, proof, challenge);
 					}
 				}
 				else if (lowercase(command) == L"check") {
@@ -379,7 +377,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 						std::cout << "Usage "<< exePath.filename().string() <<" check <filepath> [iteration]" << std::endl;
 						std::cout << "   filepath  : path to file to check" << std::endl;
 						std::cout << "   iteration : number of iteration to perform (default:100)" << std::endl;
-						return 0;
 					}
 					else {
 						uint32_t iteration = 100;
@@ -394,11 +391,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 									iteration = 100;
 								}
 							}
-							return cli_check(iteration,targetPath.wstring());
+							cli_check(iteration,targetPath.wstring());
 						}
 						else {
 							std::cerr << "file not exist" << std::endl;
-							return 1;
 						}
 					}
 				}
@@ -413,17 +409,20 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 				std::cout << "    proof " << std::endl;
 				std::cout << "    verify " << std::endl;
 				std::cout << "    check " << std::endl;
-			}
-
-			if (ownConsole) {
-				ReleaseConsole();
-			}
-			else {
-				FreeConsole();
-			}
+			}			
 		}
+		
+		if (ownConsole) {
+			ReleaseConsole();
+		}
+		else {
+			std::cout << "done, press any key to exit" << std::endl;
+			FreeConsole();
+		}
+		
 		return 0;
 	}
+	return 1;
 }
 
 constexpr auto ColorFromBytes = [](uint8_t r, uint8_t g, uint8_t b)
@@ -431,22 +430,22 @@ constexpr auto ColorFromBytes = [](uint8_t r, uint8_t g, uint8_t b)
 	return ImVec4((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, 1.0f);
 };
 
+const ImVec4 bgColor           = ColorFromBytes(4, 16, 8);
+const ImVec4 lightBgColor      = ColorFromBytes(40, 65, 50);
+const ImVec4 veryLightBgColor  = ColorFromBytes(70, 115, 90);
+
+const ImVec4 panelColor        = ColorFromBytes(80, 140, 110);
+const ImVec4 panelHoverColor   = ColorFromBytes(30, 215, 140);
+const ImVec4 panelActiveColor  = ColorFromBytes(0, 200, 120);
+
+const ImVec4 textColor         = ColorFromBytes(200, 255, 210);
+const ImVec4 textDisabledColor = ColorFromBytes(96, 96, 96);
+const ImVec4 borderColor       = ColorFromBytes(30, 48, 40);
+
 void Style()
 {
 	auto& style = ImGui::GetStyle();
 	ImVec4* colors = style.Colors;
-
-	const ImVec4 bgColor           = ColorFromBytes(10, 30, 20);
-	const ImVec4 lightBgColor      = ColorFromBytes(40, 65, 50);
-	const ImVec4 veryLightBgColor  = ColorFromBytes(70, 115, 90);
-
-	const ImVec4 panelColor        = ColorFromBytes(80, 140, 110);
-	const ImVec4 panelHoverColor   = ColorFromBytes(29, 235, 150);
-	const ImVec4 panelActiveColor  = ColorFromBytes(0, 200, 120);
-
-	const ImVec4 textColor         = ColorFromBytes(200, 255, 210);
-	const ImVec4 textDisabledColor = ColorFromBytes(96, 96, 96);
-	const ImVec4 borderColor       = ColorFromBytes(0, 0, 0);
 
 	colors[ImGuiCol_Text]                 = textColor;
 	colors[ImGuiCol_TextDisabled]         = textDisabledColor;
@@ -456,7 +455,7 @@ void Style()
 	colors[ImGuiCol_PopupBg]              = lightBgColor;
 	colors[ImGuiCol_Border]               = borderColor;
 	colors[ImGuiCol_BorderShadow]         = borderColor;
-	colors[ImGuiCol_FrameBg]              = panelColor;
+	colors[ImGuiCol_FrameBg]              = lightBgColor;
 	colors[ImGuiCol_FrameBgHovered]       = panelHoverColor;
 	colors[ImGuiCol_FrameBgActive]        = panelActiveColor;
 	colors[ImGuiCol_TitleBg]              = bgColor;
@@ -495,23 +494,36 @@ void Style()
 	colors[ImGuiCol_TabHovered]           = panelHoverColor;
 	colors[ImGuiCol_TableHeaderBg]        = lightBgColor;
 
-	style.WindowRounding    = 6.0f;
+	style.WindowRounding    = 8.0f;
 	style.ChildRounding     = 4.0f;
-	style.FrameRounding     = 4.0f;
+	style.FrameRounding     = 7.0f;
 	style.GrabRounding      = 4.0f;
 	style.PopupRounding     = 4.0f;
 	style.ScrollbarRounding = 4.0f;
 	style.TabRounding       = 0.0f;
-	style.WindowPadding     = ImVec2(0.0f,0.0f);
+	style.FramePadding		= ImVec2(6.0f,3.0f);
+	style.WindowPadding     = ImVec2(4.0f,0.0f);
+	style.ItemSpacing		= ImVec2(2.0f,4.0f);
+	style.AntiAliasedLines = true;
+	style.AntiAliasedFill = true;
 	style.TabRounding       = 0.0f;
 }
 
 namespace gui {
+
+	void tooltiipText(std::string txt, float padding_x = 4.0f, float padding_y = 2.0f) {
+		ImVec2 sz = ImGui::CalcTextSize(txt.c_str());
+		ImVec2 cursor = ImGui::GetCursorPos();
+		ImGui::InvisibleButton("##padded-text", ImVec2(sz.x + padding_x * 2, sz.y + padding_y * 2));    // ImVec2 operators require imgui_internal.h include and -DIMGUI_DEFINE_MATH_OPERATORS=1
+		ImVec2 final_cursor_pos = ImGui::GetCursorPos();
+		ImGui::SetCursorPos(ImVec2(cursor.x + padding_x, cursor.y + padding_y));
+		ImGui::Text(txt.c_str());
+		ImGui::SetCursorPos(final_cursor_pos);
+	}
+
 	const ImGuiTableFlags tableFlag = 
 		ImGuiTableFlags_Resizable|
 		ImGuiTableFlags_SizingFixedFit|
-		ImGuiTableFlags_ScrollX|
-		ImGuiTableFlags_ScrollY|
 		ImGuiTableFlags_NoBordersInBody|
 		ImGuiTableFlags_NoBordersInBodyUntilResize;
 
@@ -523,9 +535,9 @@ namespace gui {
 		Style();
 		glfwGetWindowPos(this->GetWindow(),&wx,&wy);
 		glfwGetWindowSize(this->GetWindow(),&ww,&wh);
-		ImGui::SetNextWindowPos(ImVec2(wx,wy));
-		ImGui::SetNextWindowSize(ImVec2(ww,wh));
-		ImGui::SetNextWindowSizeConstraints(ImVec2(ww,wh),ImVec2(ww,wh));
+		ImGui::SetNextWindowPos(ImVec2((float)wx,(float)wy));
+		ImGui::SetNextWindowSize(ImVec2((float)(ww),(float)(wh)));
+		ImGui::SetNextWindowSizeConstraints(ImVec2((float)ww,(float)wh),ImVec2(float(ww),float(wh)));
 		if (ImGui::Begin("gfg",nullptr,ImGuiWindowFlags_NoDecoration)) {
 			if (ImGui::BeginTabBar("MainTab")) {
 				if(ImGui::BeginTabItem("Tools")){
@@ -567,20 +579,63 @@ namespace gui {
 		
 		if(ImGui::BeginTable("toolTable",3,tableFlag)){
 			ImGui::TableSetupScrollFreeze(1, 1);
-			ImGui::TableSetupColumn("Tools",ImGuiTableColumnFlags_WidthFixed,340.0f);
-			ImGui::TableSetupColumn("Jobs",ImGuiTableColumnFlags_WidthFixed,230.0f);
-			ImGui::TableSetupColumn("Job Stat",ImGuiTableColumnFlags_WidthStretch,240);
+			ImGui::TableSetupColumn("Create Job",ImGuiTableColumnFlags_WidthFixed,340.0f);
+			ImGui::TableSetupColumn("Active Job",ImGuiTableColumnFlags_WidthFixed,230.0f);
+			ImGui::TableSetupColumn("Job Status",ImGuiTableColumnFlags_WidthStretch,240);
 			ImGui::TableHeadersRow();			
 
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
-			if (ImGui::CollapsingHeader("Create Plot")) {				
-				ImGui::Indent(10.0f);
-				this->createPlotDialog();
-				ImGui::Unindent(10.0f);
+			if (ImGui::BeginChild("col1", ImVec2(0.0f, 0.0f))) {
+				if (ImGui::CollapsingHeader("Create Plot")) {
+					ImGui::Indent(20.0f);
+					this->createPlotDialog();
+					ImGui::Unindent(20.0f);
+				}
+				if (ImGui::CollapsingHeader("Check Plot")) {
+					ImGui::Text("Under development");
+				}
+				ImGui::EndChild();
 			}
-			if (ImGui::CollapsingHeader("Check Plot")) {
-				ImGui::Text("Under development");
+
+			ImGui::TableSetColumnIndex(1);
+			if (JobManager::getInstance().countJob() < 1) {
+				ImGui::Text("No Active Job, create from left panel");
+			}
+			else {
+				if (ImGui::BeginChild("col2", ImVec2(0.0f, 0.0f))) {
+					for(auto it = JobManager::getInstance().jobIteratorBegin() ; it != JobManager::getInstance().jobIteratorEnd() ; it++){
+						ImGui::PushID((const void*)it->get());
+						ImVec2 cursorBegin = ImGui::GetCursorPos();
+						if (*it == JobManager::getInstance().getSelectedJob()) {
+							ImGui::GetStyle().Colors[ImGuiCol_Border] = textColor;
+						}
+						else {
+							ImGui::GetStyle().Colors[ImGuiCol_Border] = lightBgColor;
+						}
+						ImGui::BeginGroupPanel();
+						(*it)->drawItemWidget();
+						ImVec2 cursorEnd = ImGui::GetCursorPos();
+						float invisWidth = ImGui::GetContentRegionAvailWidth();
+						ImGui::SetCursorPos(cursorBegin);
+						if(ImGui::InvisibleButton("select", ImVec2(ImGui::GetContentRegionAvailWidth(), cursorEnd.y - cursorBegin.y))){
+							JobManager::getInstance().setSelectedJob(*it);
+						}					
+						ImGui::EndGroupPanel();
+						ImGui::GetStyle().Colors[ImGuiCol_Border] = borderColor;
+						ImGui::PopID();
+					}
+					ImGui::EndChild();
+				}
+			}
+
+			ImGui::TableSetColumnIndex(2);
+			std::shared_ptr<Job> job = JobManager::getInstance().getSelectedJob();
+			if (job) {
+				if (ImGui::BeginChild(job->getTitle().c_str())) {
+					job->drawStatusWidget();
+					ImGui::EndChild();
+				}
 			}
 
 			ImGui::EndTable();
@@ -595,139 +650,756 @@ namespace gui {
 	void MainApp::helpPage() {}
 
 	void MainApp::createPlotDialog() {
-		ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+		JobCreatePlotParam* jobPram = JobCreatePlot::drawUI();
+
+		float fieldWidth = ImGui::GetWindowContentRegionWidth();
+
+		ImGui::Text("Job Name");
+		ImGui::SameLine(90.0f);
+		ImGui::PushItemWidth(fieldWidth-(jobPram?160.0f:90.0f));
+		std::string jobName = "createplot-"+std::to_string(JobCreatePlot::jobIdCounter);
+		ImGui::InputText("##jobName",&jobName);
+		ImGui::PopItemWidth();
+		if (jobPram) {
+			ImGui::SameLine();
+			ImGui::PushItemWidth(50.0f);
+			if (ImGui::Button("Add Job")) {
+				JobManager::getInstance().addJob(std::make_shared<JobCreatePlot>(jobName, *jobPram));
+				JobCreatePlot::jobIdCounter++;
+			}
+			ImGui::PopItemWidth();
+		}		
+	}
+
+	JobCreatePlot::JobCreatePlot(std::string title, const JobCreatePlotParam& param)
+        : Job(title), param(param)
+    {
+		this->startRule.param = param.startRuleParam;
+		this->finishRule.param = param.finishRuleParam;
+		this->jobEditor.setData(&this->param);
+    }
+
+    JobCreatePlotParam* JobCreatePlot::drawUI()
+    {
+		static WidgetCreatePlot createPlotWidget;
+		static JobCreatePlotParam createPlotParam;
+		createPlotWidget.setData(&createPlotParam);
+		if (createPlotWidget.draw()) {
+			return createPlotWidget.getData();
+		}
+		else {
+			return nullptr;
+		}
+	}
+
+	int JobCreatePlot::jobIdCounter = 1;
+
+	bool JobCreatePlot::isRunning() const {
+		return this->running;
+	}
+
+	bool JobCreatePlot::isFinished() const {
+		return this->finished;
+	}
+
+	bool JobCreatePlot::isPaused() const {
+		return this->paused;
+	}
+
+    bool JobCreatePlot::start() {
+		this->running = true;
+		this->paused = false;
+		return true;
+	}
+
+	bool JobCreatePlot::pause() {
+		this->paused = true;
+		return true;
+	}
+
+	bool JobCreatePlot::cancel() {
+		this->running = false;
+		this->paused = false;
+		return false;
+	}
+
+	float JobCreatePlot::getProgress() {
+		this->progress += 0.01f;
+		if (this->progress > 1.0f) {
+			this->progress = 0.0f;
+		}
+		return this->progress;
+	}
+
+	gui::JobRule& JobCreatePlot::getStartRule() {
+		return this->startRule;
+	}
+
+	gui::JobRule& JobCreatePlot::getFinishRule() {
+		return this->finishRule;
+	}
+
+	void JobCreatePlot::drawItemWidget() {
+		Job::drawItemWidget();		
+
+		if (!this->isRunning()) {			
+			if (this->startRule.drawItemWidget()) {
+				ImGui::ScopedSeparator();
+			}
+		}
+		this->finishRule.drawItemWidget();
+	}
+
+	void JobCreatePlot::drawStatusWidget() {
+		Job::drawStatusWidget();
+		ImGui::ScopedSeparator();
+		if (!this->isRunning()) {
+			this->jobEditor.draw();
+		}		
+	}
+
+    WidgetCreatePlot::WidgetCreatePlot() {
+	}
+
+    bool WidgetCreatePlot::draw()
+    {
+		bool result = false;
+		ImGui::PushID((const void*)this);
+		float fieldWidth = ImGui::GetWindowContentRegionWidth();
+
+		ImGui::PushItemWidth(80.0f);
 		ImGui::Text("Pool Key");
+		ImGui::PopItemWidth();
 		ImGui::SameLine(80.0f);
-		ImGui::PushItemWidth(160.0f);
-		static std::string poolKey;
-		ImGui::InputText("##poolkey", &poolKey);
+		ImGui::PushItemWidth(fieldWidth-(80.0f + 55.0f));
+		result |= ImGui::InputText("##poolkey", &this->param->poolKey,ImGuiInputTextFlags_CharsHexadecimal);
+		if (ImGui::IsItemHovered() && !this->param->poolKey.empty()) {
+			ImGui::BeginTooltip();
+			tooltiipText(this->param->poolKey.c_str());
+			ImGui::EndTooltip();
+		}
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
-		ImGui::PushItemWidth(50.0f);
-		ImGui::Button("Paste##pool");
+		ImGui::PushItemWidth(55.0f);
+		if (ImGui::Button("Paste##pool")) {
+			this->param->poolKey = ImGui::GetClipboardText();
+			result |= true;
+		}
 		ImGui::PopItemWidth();
 
+		ImGui::PushItemWidth(80.0f);
 		ImGui::Text("Farm Key");
+		ImGui::PopItemWidth();
 		ImGui::SameLine(80.0f);
-		static std::string farmKey;
-		ImGui::PushItemWidth(160.0f);
-		ImGui::InputText("##farmkey", &farmKey);
+		ImGui::PushItemWidth(fieldWidth-(80.0f + 55.0f));
+		ImGui::InputText("##farmkey", &this->param->farmKey,ImGuiInputTextFlags_CharsHexadecimal);
+		if (ImGui::IsItemHovered() && !this->param->farmKey.empty()) {
+			ImGui::BeginTooltip();
+			tooltiipText(this->param->farmKey.c_str());
+			ImGui::EndTooltip();
+		}
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
-		ImGui::PushItemWidth(50.0f);
-		ImGui::Button("Paste##farm");
+		ImGui::PushItemWidth(55.0f);
+		if (ImGui::Button("Paste##farm")) {
+			this->param->farmKey = ImGui::GetClipboardText();
+			result |= true;
+		}
 		ImGui::PopItemWidth();
 
+		ImGui::PushItemWidth(80.0f);
 		ImGui::Text("Temp Dir");
+		ImGui::PopItemWidth();
 		ImGui::SameLine(80.0f);
 		static std::string tempDir;
-		ImGui::PushItemWidth(110.0f);
-		ImGui::InputText("##tempDir", &tempDir);
+		ImGui::PushItemWidth(fieldWidth-(80.0f + 105.0f));
+		if (ImGui::InputText("##tempDir", &tempDir)) {
+			this->param->tempPath = tempDir;
+			result |= true;
+		}
+		if (ImGui::IsItemHovered() && !tempDir.empty()) {
+			ImGui::BeginTooltip();
+			tooltiipText(tempDir.c_str());
+			ImGui::EndTooltip();
+		}
 		ImGui::PopItemWidth();
+		
+		ImGui::PushItemWidth(55.0f);
+		ImGui::SameLine();		
+		if (ImGui::Button("Paste##tempDir")) {
+			tempDir = ImGui::GetClipboardText();
+			this->param->tempPath = tempDir;
+			result |= true;
+		}
+		ImGui::PopItemWidth();
+		ImGui::PushItemWidth(55.0f);
 		ImGui::SameLine();
-		ImGui::PushItemWidth(50.0f);
-		ImGui::Button("Paste##tempDir");
-		ImGui::SameLine();
-		ImGui::Button("Select##tempDir");
+		if (ImGui::Button("Select##tempDir")) {
+			std::optional<std::filesystem::path> dirPath = ImFrame::PickFolderDialog();
+			if (dirPath) {
+				tempDir = dirPath->string();
+				this->param->tempPath = tempDir;
+			}
+			result |= true;
+		}
 		ImGui::PopItemWidth();
 
+		ImGui::PushItemWidth(80.0f);
 		ImGui::Text("Dest Dir");
+		ImGui::PopItemWidth();
 		ImGui::SameLine(80.0f);
 		static std::string destDir;
-		ImGui::PushItemWidth(110.0f);
-		ImGui::InputText("##destDir", &destDir);
+		ImGui::PushItemWidth(fieldWidth-(80.0f + 105.0f));
+		if (ImGui::InputText("##destDir", &destDir)) {
+			this->param->destPath = destDir;
+			result |= true;
+		}
+		if (ImGui::IsItemHovered() && !destDir.empty()) {
+			ImGui::BeginTooltip();
+			tooltiipText(destDir.c_str());
+			ImGui::EndTooltip();
+		}
 		ImGui::PopItemWidth();
+		ImGui::PushItemWidth(55.0f);
 		ImGui::SameLine();
-		ImGui::PushItemWidth(50.0f);
-		ImGui::Button("Paste##destDir");
+		if (ImGui::Button("Paste##destDir")) {
+			destDir = ImGui::GetClipboardText();
+			this->param->destPath = destDir;
+			result |= true;
+		}
+		ImGui::PopItemWidth();
+		ImGui::PushItemWidth(55.0f);
 		ImGui::SameLine();
-		ImGui::Button("Select##destDir");
+		if (ImGui::Button("Select##destDir")) {
+			std::optional<std::filesystem::path> dirPath = ImFrame::PickFolderDialog();
+			if (dirPath) {
+				destDir = dirPath.value().string();
+				this->param->destPath = dirPath.value();
+			}
+			result |= true;
+		}
 		ImGui::PopItemWidth();
 
 		if (ImGui::CollapsingHeader("Advanced")) {
-			ImGui::Text("Plot Size (k)");
-			ImGui::SameLine(90.0f);
-			ImGui::PushItemWidth(200.0f);
-			static int kSize = 32;
-			ImGui::InputInt("##k",&kSize,1,10);
-			ImGui::PopItemWidth();
+			ImGui::Indent(20.0f);
+			fieldWidth = ImGui::GetWindowContentRegionWidth();
 
-			ImGui::Indent(10.0f);
+			ImGui::Text("Plot Size (k)");
+			ImGui::SameLine(120.0f);
+			ImGui::PushItemWidth(fieldWidth-130.0f);
+			if (ImGui::InputInt("##k", &this->param->ksize, 1, 10)) {
+				if (this->param->ksize < 1) {
+					this->param->ksize = 1;
+				}
+				result |= true;
+			}
+			ImGui::PopItemWidth();
+			
 			ImGui::Text("Temp Dir2");
-			ImGui::SameLine(90.0f);
+			ImGui::SameLine(120.0f);
 			static std::string tempDir2;
-			ImGui::PushItemWidth(150.0f);
-			ImGui::InputText("##tempDir2", &tempDir2);
+			ImGui::PushItemWidth(fieldWidth-225.0f);
+			if (ImGui::InputText("##tempDir2", &tempDir2)) {
+				this->param->temp2Path = tempDir2;
+				result |= true;
+			}
+			if (ImGui::IsItemHovered() && !tempDir2.empty()) {
+				ImGui::BeginTooltip();
+				tooltiipText(tempDir2.c_str());
+				ImGui::EndTooltip();
+				result |= true;
+			}
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
-			ImGui::PushItemWidth(44.0f);
-			ImGui::Button("Paste##tempDir2");
+			ImGui::PushItemWidth(50.0f);
+			if (ImGui::Button("Paste##tempDir2")) {
+				tempDir2 = ImGui::GetClipboardText();
+				this->param->temp2Path = tempDir2;
+				result |= true;
+			}
 			ImGui::SameLine();
-			ImGui::Button("Select##tempDir2");
+			if (ImGui::Button("Select##tempDir2")) {
+				std::optional<std::filesystem::path> dirPath = ImFrame::PickFolderDialog();
+				if (dirPath) {
+					tempDir2 = dirPath.value().string();
+					this->param->temp2Path = dirPath.value();
+				}
+				result |= true;
+			}
 			ImGui::PopItemWidth();
 
 			ImGui::Text("Buckets");
-			ImGui::SameLine(90.0f);
-			ImGui::PushItemWidth(200.0f);
-			static int buckets = 128;
-			ImGui::InputInt("##buckets",&buckets,1,8);
+			ImGui::SameLine(120.0f);
+			ImGui::PushItemWidth(fieldWidth-130.0f);
+			if (ImGui::InputInt("##buckets", &this->param->buckets, 1, 8)) {
+				if (this->param->buckets < 16) {
+					this->param->buckets = 16;
+				}
+				if (this->param->buckets > 128) {
+					this->param->buckets = 128;
+				}
+				result |= true;
+			}
 
 			ImGui::Text("Stripes");
-			ImGui::SameLine(90.0f);
-			ImGui::PushItemWidth(200.0f);
-			static int stripes = 65536;
-			ImGui::InputInt("##stripes",&stripes,1024,4096);
+			ImGui::SameLine(120.0f);
+			ImGui::PushItemWidth(fieldWidth-130.0f);
+			if (ImGui::InputInt("##stripes", &this->param->stripes, 1024, 4096)) {
+				if (this->param->stripes < 1) {
+					this->param->stripes = 1;
+				}
+				result |= true;
+			}
 			ImGui::PopItemWidth();
 
 			ImGui::Text("Threads");
-			ImGui::SameLine(90.0f);
-			ImGui::PushItemWidth(200.0f);
-			static int threadCount = 2;
-			ImGui::InputInt("##k",&threadCount,1,2);
+			ImGui::SameLine(120.0f);
+			ImGui::PushItemWidth(fieldWidth-130.0f);
+			if (ImGui::InputInt("##threads", &this->param->threads, 1, 2)) {
+				if (this->param->threads < 1) {
+					this->param->threads = 1;
+				}
+				result |= true;
+			}
 			ImGui::PopItemWidth();
 
-			ImGui::Text("Buffer");
-			ImGui::SameLine(90.0f);
-			ImGui::PushItemWidth(200.0f);
-			static int buffer = 4608;
-			ImGui::InputInt("##buffer",&buffer,1024,2048);
+			ImGui::Text("Buffer (MB)");
+			ImGui::SameLine(120.0f);
+			ImGui::PushItemWidth(fieldWidth-130.0f);
+			if (ImGui::InputInt("##buffer", &this->param->buffer, 1024, 2048)) {
+				if (this->param->buffer < 16) {
+					this->param->buffer = 16;
+				}
+				result |= true;
+			}
 			ImGui::PopItemWidth();
 
-			ImGui::Unindent(10.0f);
+			ImGui::Text("Bitfield");
+			ImGui::SameLine(120.0f);
+			ImGui::PushItemWidth(fieldWidth-130.0f);
+			ImGui::Checkbox("##bitfeld", &this->param->bitfied);
+			ImGui::PopItemWidth();
+
+			if (ImGui::Button("Load Default")) {
+				this->param->loadDefault();
+				result |= true;
+			}
+
+			ImGui::Unindent(20.0f);
 		}
 
 		if (ImGui::CollapsingHeader("Start Rule")) {
-			ImGui::Indent(10.0f);
-			static bool startImmediate = true;
-			static bool startDelayed = false;
-			static bool startConditional = false;
-			static bool startPaused = false;
-			if (ImGui::Checkbox("Paused", &startPaused)) {
-				startDelayed = false;
-				startConditional = false;
-				startImmediate = false;
-			}
-			if (ImGui::Checkbox("Immediately", &startImmediate)) {
-				startDelayed = false;
-				startConditional = false;
-				startPaused = false;
-			}
-			if (ImGui::Checkbox("Delayed",&startDelayed)) {
-				startImmediate = false;
-				startConditional = false;
-				startPaused = false;
-			}
-			if (ImGui::Checkbox("Conditional",&startConditional)) {
-				startImmediate = false;
-				startDelayed = false;
-				startPaused = false;
-			}
-			if (!startImmediate && !startDelayed && !startConditional && !startPaused) {
-				startPaused = true;
-			}
-			ImGui::Unindent(10.0f);
+			ImGui::Indent(20.0f);
+			result |= this->startRuleWidget.draw();
+			ImGui::Unindent(20.0f);
 		}
 
-		ImGui::Button("Add Job");
+		if (ImGui::CollapsingHeader("Finish Rule")) {
+			ImGui::Indent(20.0f);
+			result |= this->finishRuleWidget.draw();
+			ImGui::Unindent(20.0f);
+		}
+
+		std::string errMsg = "";
+		result = this->param->isValid(&errMsg);
+
+		if (!errMsg.empty()) {
+			ImGui::Text(errMsg.c_str());
+		}
+
+		ImGui::PopID();
+		return result;
 	}
-}
+
+	void WidgetCreatePlot::setData(JobCreatePlotParam* param)
+    {
+        Widget<JobCreatePlotParam*>::setData(param);
+        this->startRuleWidget.setData(&param->startRuleParam);
+		this->finishRuleWidget.setData(&param->finishRuleParam);
+    }
+
+    void JobCreatePlotParam::loadDefault()
+    {
+		this->buckets = 128;
+		this->stripes = 65536;
+		this->threads = 2;
+		this->buffer = 4608;
+		this->ksize = 32;
+		this->temp2Path = "";
+		this->bitfied = true;
+	}
+
+	bool JobCreatePlotParam::isValid(std::string* errMsg) const {
+		if (errMsg) {
+			if (this->poolKey.empty()) {
+				*errMsg = "pool public key must be specified";
+			}
+			else {
+				if (this->poolKey.length() < 2*48) {
+					*errMsg = "pool public key must be 48 bytes (96 hex characters)";
+				}
+			}
+			if (this->farmKey.empty()) {
+				*errMsg = "farm public key must be specified";
+			}
+			else {
+			if (this->farmKey.length() < 2*48) {
+					*errMsg = "farm public key must be 48 bytes (96 hex characters)";
+				}
+			}
+		}
+		return !this->poolKey.empty() && !this->farmKey.empty();
+	}
+
+    bool WidgetCreatePlotStartRule::draw()
+    {
+		ImGui::PushID((const void*)this);
+		bool result = false;
+		if (ImGui::Checkbox("Paused", &this->param->startPaused)) {
+			this->param->startDelayed = false;
+			this->param->startConditional = false;
+			this->param->startImmediate = false;
+			result |= true;
+		}
+		if (ImGui::Checkbox("Immediately", &this->param->startImmediate)) {
+			this->param->startDelayed = false;
+			this->param->startConditional = false;
+			this->param->startPaused = false;
+			result |= true;
+		}
+		if (ImGui::Checkbox("Delayed",&this->param->startDelayed)) {
+			this->param->startImmediate = false;
+			this->param->startConditional = false;
+			this->param->startPaused = false;
+			result |= true;
+		}
+		if (this->param->startDelayed) {
+			ImGui::Indent(20.0f);
+			float fieldWidth = ImGui::GetWindowContentRegionWidth();
+			ImGui::BeginGroupPanel(ImVec2(-1.0f,0.0f));
+			ImGui::Text("Delay (min)");
+			ImGui::SameLine(80.0f);
+			ImGui::PushItemWidth(fieldWidth-160.0f);
+			if (ImGui::InputInt("##delay", &this->param->startDelayedMinute, 1, 5)) {
+				if (this->param->startDelayedMinute < 1) {
+					this->param->startDelayedMinute = 1;
+				}
+				result |= true;
+			}
+			ImGui::PopItemWidth();
+			ImGui::EndGroupPanel();
+			ImGui::Unindent(20.0f);
+		}
+		if (ImGui::Checkbox("Conditional",&this->param->startConditional)) {
+			this->param->startImmediate = false;
+			this->param->startDelayed = false;
+			this->param->startPaused = false;
+			result |= true;
+		}
+		if (this->param->startConditional) {
+			ImGui::Indent(20.0f);
+			ImGui::BeginGroupPanel(ImVec2(-1.0f,0.0f));
+			
+			result |= ImGui::Checkbox("if Active Jobs",&this->param->startCondActiveJob);
+			if (this->param->startCondActiveJob) {
+				float fieldWidth = ImGui::GetWindowContentRegionWidth();
+				ImGui::Text("Less Than");
+				ImGui::SameLine(80.0f);
+				ImGui::PushItemWidth(fieldWidth-150.0f);
+				if (ImGui::InputInt("##lessthan", &this->param->startCondActiveJobCount, 1, 5)) {
+					if (this->param->startCondActiveJobCount < 1) {
+						this->param->startCondActiveJobCount = 1;
+					}
+					result |= true;
+				}
+				ImGui::PopItemWidth();
+			}
+			result |= ImGui::Checkbox("If Time Within",&this->param->startCondTime);
+			if (this->param->startCondTime) {
+				float fieldWidth = ImGui::GetWindowContentRegionWidth();
+				ImGui::Text("Start (Hr)");
+				ImGui::SameLine(80.0f);
+				ImGui::PushItemWidth(fieldWidth-150.0f);
+				if (ImGui::InputInt("##start", &this->param->startCondTimeStart, 1, 5)) {
+					if (this->param->startCondTimeStart < 0) {
+						this->param->startCondTimeStart = 24;
+					}
+					if (this->param->startCondTimeStart > 24) {
+						this->param->startCondTimeStart = 0;
+					}
+					result |= true;
+				}
+				ImGui::PopItemWidth();
+				ImGui::Text("End (Hr)");
+				ImGui::SameLine(80.0f);
+				ImGui::PushItemWidth(fieldWidth-150.0f);
+				if (ImGui::InputInt("##end", &this->param->startCondTimeEnd, 1, 5)) {
+					if (this->param->startCondTimeEnd < 0) {
+						this->param->startCondTimeEnd = 24;
+					}
+					if (this->param->startCondTimeEnd > 24) {
+						this->param->startCondTimeEnd = 0;
+					}
+					result |= true;
+				}
+				ImGui::PopItemWidth();
+			}
+			
+			ImGui::EndGroupPanel();
+			ImGui::Unindent(20);
+		}
+		if (!this->param->startImmediate && !this->param->startDelayed && !this->param->startConditional && !this->param->startPaused) {
+			this->param->startPaused = true;
+		}
+		ImGui::PopID();
+		return result;
+	}
+
+	bool WidgetCreatePlotFinishRule::draw() {
+		ImGui::PushID((const void*)this);
+		bool result = false;
+		result |= ImGui::Checkbox("Relaunch",&this->param->repeatJob);
+		if (this->param->repeatJob) {
+			ImGui::Indent(20.0f);
+			ImGui::BeginGroupPanel(ImVec2(-1.0f,0.0f));
+			if (!this->param->repeatIndefinite) {
+				float fieldWidth = ImGui::GetWindowContentRegionWidth();
+				ImGui::Text("Count");
+				ImGui::SameLine(80.0f);
+				ImGui::PushItemWidth(fieldWidth-150.0f);
+				if (ImGui::InputInt("##repeatCount", &this->param->repeatCount, 1, 5)) {
+					if (this->param->repeatCount < 1) {
+						this->param->repeatCount = 1;
+					}
+					result |= true;
+				}
+				ImGui::PopItemWidth();
+			}
+			result |= ImGui::Checkbox("Indefinite",&this->param->repeatIndefinite);
+			ImGui::EndGroupPanel();
+			ImGui::Unindent(20.0f);
+		}
+		result |= ImGui::Checkbox("Launch Program",&this->param->execProg);
+		if (this->param->execProg) {
+			ImGui::Indent(20.0f);
+			ImGui::BeginGroupPanel(ImVec2(-1.0f,0.0f));
+				float fieldWidth = ImGui::GetWindowContentRegionWidth();
+				ImGui::Text("Path");
+				ImGui::SameLine(80.0f);
+				static std::string execPath;
+				ImGui::PushItemWidth(fieldWidth-240.0f);
+				if (ImGui::InputText("##execPath", &execPath)) {
+					this->param->progToExec = execPath;
+					result |= true;
+				}
+				if (ImGui::IsItemHovered() && !execPath.empty()) {
+					ImGui::BeginTooltip();
+					tooltiipText(execPath.c_str());
+					ImGui::EndTooltip();
+				}
+				ImGui::PopItemWidth();
+				ImGui::SameLine();
+				ImGui::PushItemWidth(44.0f);
+				if (ImGui::Button("Paste##execPath")) {
+					execPath = ImGui::GetClipboardText();
+					this->param->progToExec = execPath;
+					result |= true;
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Select##execPath")) {
+					std::vector<ImFrame::Filter> filters;
+					filters.push_back(ImFrame::Filter());
+					filters.push_back(ImFrame::Filter());
+					filters[0].name = "exe";
+					filters[0].spec = "*.exe";
+					filters[1].name = "batch script";
+					filters[1].spec = "*.bat";
+					std::optional<std::filesystem::path> dirPath = ImFrame::OpenFileDialog(filters);
+					if (dirPath) {
+						execPath = dirPath->string();
+						this->param->progToExec = dirPath.value();
+					}
+					result |= true;
+				}
+				ImGui::PopItemWidth();
+			ImGui::EndGroupPanel();
+			ImGui::Unindent(20.0f);
+		}
+		ImGui::PopID();
+		return result;
+	}
+
+	std::string Job::getTitle() const { return this->title; }
+
+	void Job::drawItemWidget() {
+		ImGui::Text(this->getTitle().c_str());
+		ImGui::ProgressBar(this->getProgress());
+	}
+
+	void Job::drawStatusWidget() {
+		ImGui::Text(this->getTitle().c_str());
+		ImGui::ProgressBar(this->getProgress());
+		if (this->isRunning()) {
+			if(this->isPaused()){
+				if (ImGui::Button("Resume")) {
+					this->start();
+				}
+			}
+			else {
+				if (ImGui::Button("Pause")) {
+					this->pause();
+				}
+			}
+		}
+		else {
+			if (this->getStartRule().evaluate()) {
+				if (ImGui::Button("Start")) {
+					this->start();
+				}
+			}
+			else {
+				if (ImGui::Button("Overide Start")) {
+					this->start();
+				}
+			}
+			
+		}
+		ImGui::SameLine();
+		if (this->isRunning()) {
+			if (ImGui::Button("Cancel")) {
+				this->cancel();
+			}
+		}
+		else {
+			if (ImGui::Button("Delete")) {
+				this->cancel();
+			}
+		}
+	}
+
+    JobCratePlotStartRule::JobCratePlotStartRule()
+    {
+		this->creationTime = std::chrono::system_clock::now();
+	}
+
+    bool JobCratePlotStartRule::drawItemWidget()
+    {
+		if (this->param.startDelayed) {
+			std::chrono::minutes delayDuration(this->param.startDelayedMinute);
+			std::chrono::time_point<std::chrono::system_clock> startTime = this->creationTime + delayDuration;
+			std::chrono::time_point<std::chrono::system_clock> currentTime = std::chrono::system_clock::now();
+			std::chrono::duration<float> delta = startTime - currentTime;
+			ImGui::Text("will start in %.1f hour ", delta.count()/3600.0f);
+			return true;
+		}
+		else if (this->param.startPaused) {
+			ImGui::Text("job paused");
+			return true;
+		}
+		else if (this->param.startConditional) {
+			bool result = false;
+			if (this->param.startCondActiveJob) {
+				ImGui::Text("start if active job < %d", this->param.startCondActiveJobCount);
+				result |= true;
+			}
+			if (this->param.startCondTime) {
+				ImGui::Text("start within %02d:00 - %2d:00", this->param.startCondTimeStart, this->param.startCondTimeEnd);
+				result |= true;
+			}
+			return result;
+		}
+		return false;
+	}
+
+	bool JobCratePlotStartRule::evaluate() {
+		if (this->param.startDelayed) {
+			std::chrono::minutes delayDuration(this->param.startDelayedMinute);
+			std::chrono::time_point<std::chrono::system_clock> startTime = this->creationTime + delayDuration;
+			std::chrono::time_point<std::chrono::system_clock> currentTime = std::chrono::system_clock::now();
+			return currentTime > startTime;
+		}
+		else if (this->param.startConditional) {
+			bool result = true;
+			if (this->param.startCondTime) {
+				std::chrono::time_point<std::chrono::system_clock> currentTime = std::chrono::system_clock::now();
+				std::time_t ct = std::chrono::system_clock::to_time_t(currentTime);
+				std::tm* t = std::localtime(&ct);
+				if ((this->param.startCondTimeStart > t->tm_hour) && 
+					(t->tm_hour < this->param.startCondTimeEnd)) {
+					result &= true;
+				}
+				else {
+					result &= false;
+				}
+			}
+
+			if (this->param.startCondActiveJob) {
+				if (JobManager::getInstance().countRunningJob() < this->param.startCondActiveJobCount) {
+					result &= true;
+				}
+				else {
+					result &= false;
+				}
+			}
+			return result;
+		}
+	}
+
+    JobCratePlotStartRuleParam::JobCratePlotStartRuleParam() {
+		
+	}
+
+	bool JobCreatePlotFinishRule::drawItemWidget() {
+		if (this->param.repeatJob) {
+			if (this->param.repeatIndefinite) {
+				ImGui::Text("Job will repeat indefinitely");
+				return true;
+			}
+			else {
+				ImGui::Text("Job will repeat %d times", this->param.repeatCount);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	JobManager& JobManager::getInstance() {
+		static JobManager instance;
+		return instance;
+	}
+
+	void JobManager::addJob(std::shared_ptr<Job> newJob) {
+		this->activeJobs.push_back(newJob);
+	}
+
+	void JobManager::setSelectedJob(std::shared_ptr<Job> job) {
+		this->selectedJob = job;
+	}
+
+	std::shared_ptr<gui::Job> JobManager::getSelectedJob() const {
+		return this->selectedJob;
+	}
+
+	size_t JobManager::countJob() const {
+		return this->activeJobs.size();
+	}
+
+	size_t JobManager::countRunningJob() const {
+		size_t result = 0;
+		for (auto job : this->activeJobs) {
+			if (job->isRunning()) {
+				result++;
+			}
+		}
+		return result;
+	}
+
+	std::vector<std::shared_ptr<Job>>::const_iterator JobManager::jobIteratorBegin() const  {
+		return this->activeJobs.begin();
+	}
+
+	std::vector<std::shared_ptr<Job>>::const_iterator JobManager::jobIteratorEnd() const  {
+		return this->activeJobs.end();
+	}
+
+}  // namespace gui

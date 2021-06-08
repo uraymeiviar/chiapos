@@ -80,62 +80,6 @@ namespace ImFrame
 		std::unique_ptr<PersistentData> s_data;
 
 
-		void ErrorCallback([[maybe_unused]] int error, const char * description)
-		{
-			fprintf(stderr, "Error: %s\n", description);
-		}
-
-		void KeyCallback([[maybe_unused]] GLFWwindow * window, int key, int scancode, int action, int mods)
-		{
-			if (s_data->appPtr)
-			{
-				s_data->appPtr->OnKeyEvent(key, scancode, action, mods);
-				if (action == GLFW_PRESS)
-					s_data->appPtr->OnKeyPress(key, mods);
-			}
-		}
-
-		void WindowPosCallback(GLFWwindow * window, int x, int y)
-		{		
-			if (!glfwGetWindowAttrib(window, GLFW_MAXIMIZED))
-			{
-				s_data->windowPosX = x;
-				s_data->windowPosY = y;
-			}
-			if (s_data->appPtr)
-				s_data->appPtr->OnWindowPositionChange(x, y);
-		}
-
-		void WindowSizeCallback(GLFWwindow * window, int width, int height)
-		{
-			if (!glfwGetWindowAttrib(window, GLFW_MAXIMIZED))
-			{
-				s_data->windowWidth = width;
-				s_data->windowHeight = height;
-			}
-			if (s_data->appPtr)
-				s_data->appPtr->OnWindowSizeChange(width, height);
-		}
-
-		void WindowMaximizeCallback([[maybe_unused]] GLFWwindow * window, int maximized)
-		{
-			s_data->windowMaximized = maximized ? true : false;
-			if (s_data->appPtr)
-				s_data->appPtr->OnWindowMaximize(s_data->windowMaximized);
-		}
-
-		void WindowMouseButtonCallback([[maybe_unused]] GLFWwindow * window, int button, int action, int mods)
-		{
-			if (s_data->appPtr)
-				s_data->appPtr->OnMouseButtonEvent(button, action, mods);
-		}
-
-		void WindowCursorPositionCallback([[maybe_unused]] GLFWwindow * window, double x, double y)
-		{
-			if (s_data->appPtr)
-				s_data->appPtr->OnCursorPosition(x, y);
-		}
-
 		std::string GetConfigValue(mINI::INIStructure & ini, const char * sectionName, const char * valueName, const std::string & defaultValue)
 		{
 			const auto & s = ini[sectionName][valueName];
@@ -579,7 +523,120 @@ namespace ImFrame
 #endif
     }
 
-    int Run(const std::string & orgName, const std::string & appName, ImAppCreateFn createAppFn)
+
+	void RenderWindow(GLFWwindow* window)
+	{
+		// Perform event and input polling
+		glfwPollEvents();
+
+		// Load new font if necessary
+		UpdateCustomFont();
+
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		// Use custom font for this frame
+		ImFont* font = s_data->customFont;
+		if (font)
+			ImGui::PushFont(font);
+
+		// Clear render buffer
+		int width, height;
+		glfwGetFramebufferSize(window, &width, &height);
+		glViewport(0, 0, width, height);
+		glClearColor(s_data->backgroundColor[0], s_data->backgroundColor[1], s_data->backgroundColor[2], 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		// Perform app-specific updates
+		if (s_data->appPtr) {
+			s_data->appPtr->OnUpdate();
+		}		
+
+		// Pop custom font at the end of the frame
+		if (font)
+			ImGui::PopFont();
+
+		// Render ImGui to draw data
+		ImGui::Render();
+
+		// Render ImGui
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		// Update and Render additional Platform Windows
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+		}
+
+		// Present buffer
+		glfwSwapBuffers(window);
+	}
+
+		void ErrorCallback([[maybe_unused]] int error, const char * description)
+		{
+			fprintf(stderr, "Error: %s\n", description);
+		}
+
+		void KeyCallback([[maybe_unused]] GLFWwindow * window, int key, int scancode, int action, int mods)
+		{
+			if (s_data->appPtr)
+			{
+				s_data->appPtr->OnKeyEvent(key, scancode, action, mods);
+				if (action == GLFW_PRESS)
+					s_data->appPtr->OnKeyPress(key, mods);
+			}
+		}
+
+		void WindowPosCallback(GLFWwindow * window, int x, int y)
+		{		
+			if (!glfwGetWindowAttrib(window, GLFW_MAXIMIZED))
+			{
+				s_data->windowPosX = x;
+				s_data->windowPosY = y;
+			}
+			if (s_data->appPtr)
+				s_data->appPtr->OnWindowPositionChange(x, y);
+		}
+
+		void WindowSizeCallback(GLFWwindow * window, int width, int height)
+		{
+			if (!glfwGetWindowAttrib(window, GLFW_MAXIMIZED))
+			{
+				s_data->windowWidth = width;
+				s_data->windowHeight = height;
+			}
+			if (s_data->appPtr)
+				s_data->appPtr->OnWindowSizeChange(width, height);
+
+			RenderWindow(window);
+		}
+
+		void WindowMaximizeCallback([[maybe_unused]] GLFWwindow * window, int maximized)
+		{
+			s_data->windowMaximized = maximized ? true : false;
+			if (s_data->appPtr)
+				s_data->appPtr->OnWindowMaximize(s_data->windowMaximized);
+		}
+
+		void WindowMouseButtonCallback([[maybe_unused]] GLFWwindow * window, int button, int action, int mods)
+		{
+			if (s_data->appPtr)
+				s_data->appPtr->OnMouseButtonEvent(button, action, mods);
+		}
+
+		void WindowCursorPositionCallback([[maybe_unused]] GLFWwindow * window, double x, double y)
+		{
+			if (s_data->appPtr)
+				s_data->appPtr->OnCursorPosition(x, y);
+		}
+
+	int Run(const std::string& orgName, const std::string& appName, ImAppCreateFn createAppFn)
     {
 		namespace fs = std::filesystem;
 
@@ -636,7 +693,7 @@ namespace ImFrame
 
 		// Initialize ImGui
 		ImGui::CreateContext();
-		ImGuiIO & io = ImGui::GetIO();
+		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 		fs::path iniPath = GetConfigFolder(orgName, appName);
@@ -656,53 +713,7 @@ namespace ImFrame
 		// Main application loop
 		while (!glfwWindowShouldClose(window))
 		{
-			// Perform event and input polling
-			glfwPollEvents();
-
-			// Load new font if necessary
-			UpdateCustomFont();
-
-			// Start the Dear ImGui frame
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-
-			// Use custom font for this frame
-			ImFont * font = s_data->customFont;
-			if (font)
-				ImGui::PushFont(font);
-
-			// Clear render buffer
-			int width, height;
-			glfwGetFramebufferSize(window, &width, &height);
-			glViewport(0, 0, width, height);
-			glClearColor(s_data->backgroundColor[0], s_data->backgroundColor[1], s_data->backgroundColor[2], 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
-
-			// Perform app-specific updates
-			s_data->appPtr->OnUpdate();
-
-			// Pop custom font at the end of the frame
-			if (font)
-				ImGui::PopFont();
-
-			// Render ImGui to draw data
-			ImGui::Render();
-
-			// Render ImGui
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-			// Update and Render additional Platform Windows
-			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-			{
-				GLFWwindow * backup_current_context = glfwGetCurrentContext();
-				ImGui::UpdatePlatformWindows();
-				ImGui::RenderPlatformWindowsDefault();
-				glfwMakeContextCurrent(backup_current_context);
-			}
-            
-			// Present buffer
-			glfwSwapBuffers(window);
+			RenderWindow(window);
 		}
         
         // OS-specific shutdown

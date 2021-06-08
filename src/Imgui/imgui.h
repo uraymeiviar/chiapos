@@ -438,6 +438,10 @@ namespace ImGui
     IMGUI_API float         GetTextLineHeightWithSpacing();                                 // ~ FontSize + style.ItemSpacing.y (distance in pixels between 2 consecutive lines of text)
     IMGUI_API float         GetFrameHeight();                                               // ~ FontSize + style.FramePadding.y * 2
     IMGUI_API float         GetFrameHeightWithSpacing();                                    // ~ FontSize + style.FramePadding.y * 2 + style.ItemSpacing.y (distance in pixels between 2 consecutive lines of framed widgets)
+    IMGUI_API void BeginGroupPanel(const char* name, const ImVec2& size = ImVec2(0.0f, 0.0f));
+    IMGUI_API void BeginGroupPanel(const ImVec2& size = ImVec2(0.0f, 0.0f));
+    IMGUI_API void EndGroupPanel();
+    IMGUI_API void ScopedSeparator();
 
     // ID stack/scopes
     // - Read the FAQ for more details about how ID are handled in dear imgui. If you are creating widgets in a loop you most
